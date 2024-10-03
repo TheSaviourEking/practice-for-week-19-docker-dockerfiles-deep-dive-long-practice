@@ -14,7 +14,6 @@ COPY package*.json ./
 #   To keep the image small, (force) clean the npm cache after
 #   Chain the commands to reduce the number of layers in the image
 RUN npm install && npm cache clean --force
-
 # Step 5: Copy in all the files from the current directory
 COPY . .
 
@@ -24,6 +23,8 @@ RUN npm run build
 # Step 7: Bring in the base image for NGINX (alpine)
 # FROM nginx:1.27.1-alpine
 FROM nginx:1.25.3-alpine
+
+RUN apk add --no-cache curl
 
 # (There will be no need to EXPOSE a port because this base image
 # already has an EXPOSE command)
@@ -45,3 +46,6 @@ COPY  --from=build-stage app/build .
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 # (No need to add a CMD because it's included in the base image)
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:80 || exit 1

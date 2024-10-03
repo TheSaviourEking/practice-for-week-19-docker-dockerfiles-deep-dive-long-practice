@@ -7,7 +7,7 @@ FROM node:22-alpine
 EXPOSE 8081
 # Step 3: Use alpine package manager to install tini: 'apk add --update tini'
 #   (tini is a package that can be used as an entry point in a container)
-RUN apk add --update tini
+RUN apk add --no-cache tini curl
 # Step 4: With a single command, create a new directory for app files at the 
 #   path '/usr/src/app' and make that your current directory 
 WORKDIR /usr/src/app
@@ -27,3 +27,7 @@ COPY . .
 #   Here is the documentation for CMD if you need a reminder:
 #   https://docs.docker.com/engine/reference/builder/#cmd
 CMD [ "/sbin/tini",  "--", "node", "app.js"]
+
+RUN apk add --update tini curl
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8081 || exit 1
